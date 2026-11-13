@@ -165,7 +165,8 @@ export function registerServices(on, options) {
               flexDirection: 'row',
               columnGap: 1,
               children: [
-                Text({ color: s.state === 'running' ? (s.listening === false ? 'warning' : 'success') : 'subtle', children: [s.state === 'running' && s.listening === false ? 'not listening' : s.state] }),
+                // The state word never shrinks: in a half-width terminal it split as "runnin" / "g"
+                Box({ flexShrink: 0, children: [Text({ color: s.state === 'running' ? (s.listening === false ? 'warning' : 'success') : 'subtle', children: [s.state === 'running' && s.listening === false ? 'not listening' : s.state] })] }),
                 Text({ weight: 'semibold', children: [s.command] }),
               ],
             }),
@@ -199,7 +200,7 @@ export function registerServices(on, options) {
           columnGap: 2,
           children: [
             Text({ color: 'success', children: [live.length + (live.length === 1 ? ' server' : ' servers') + ' running: ' + live.map(s => s.url || s.port || s.taskId).join(', ')] }),
-            Button({ key: 'svc-open-pane', label: 'Services', hotkey: '0', plain: true, onPress: () => $.ui.open({ id: PANE, title: 'Services', focus: true, closeOnEscape: true }) }),
+            Box({ flexShrink: 0, children: [Button({ key: 'svc-open-pane', label: 'Services', hotkey: '0', plain: true, onPress: () => $.ui.open({ id: PANE, title: 'Services', focus: true, closeOnEscape: true }) })] }),
           ],
         }),
         ...(below ? [below] : []),
