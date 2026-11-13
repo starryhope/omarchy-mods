@@ -1,6 +1,6 @@
 {
   "name": "omarchy-mods",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Example Claude Code mods for Omarchy: desktop notifications with Approve and Deny, package cards with an AUR review hold, run-it-for-me buttons, and a services pane",
   "author": { "name": "Starry Hope", "url": "https://www.starryhope.com/" },
   "repository": "https://github.com/starryhope/omarchy-mods",

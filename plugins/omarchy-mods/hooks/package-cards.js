@@ -10,19 +10,61 @@ const calls = new Map()
 // The call waiting in the review pane, or null
 let review = null
 
+// sudo options that take a value as the next word (sudo -u root, sudo -g wheel)
+const SUDO_VALUE_OPTIONS = new Set(['-u', '-g', '-C', '-D', '-h', '-p', '-R', '-T', '-r', '-t', '-U'])
+// pacman, yay and paru options that take a value as the next word, so the value is not read as a package
+const VALUE_OPTIONS = new Set([
+  '-b', '--dbpath', '-r', '--root', '--arch', '--cachedir', '--color', '--config', '--gpgdir', '--hookdir',
+  '--logfile', '--sysroot', '--ignore', '--ignoregroup', '--assume-installed', '--overwrite', '--print-format',
+  '--answerclean', '--answerdiff', '--answeredit', '--answerupgrade', '--builddir', '--editor', '--editorflags',
+  '--makepkg', '--mflags', '--pacman', '--git', '--gitflags', '--sudo', '--sudoflags', '--gpg', '--gpgflags',
+  '--aururl', '--aurrpcurl', '--batchinstallflags', '--completioninterval', '--requestsplitn', '--sortby',
+  '--searchby', '--clonedir',
+])
+
+// Drops leading environment settings and sudo with its options: `sudo -n pacman -S x` installs x too
+function dropPrefix(words) {
+  while (words.length) {
+    if (/^[A-Z_]+=/.test(words[0])) {
+      words.shift()
+    } else if (words[0] === 'sudo') {
+      words.shift()
+      while (words.length && words[0].startsWith('-') && words[0] !== '--') {
+        const option = words.shift()
+        if (SUDO_VALUE_OPTIONS.has(option)) words.shift()
+      }
+      if (words[0] === '--') words.shift()
+    } else {
+      break
+    }
+  }
+  return words
+}
+
 // Finds the packages a command installs with yay, paru or pacman -S, or null
 export function parseInstall(command) {
   const pkgs = []
   let tool = null
   for (const segment of command.split(/&&|\|\||;|\||\n/)) {
-    const words = segment.trim().split(/\s+/).filter(Boolean)
-    while (words.length && (words[0] === 'sudo' || /^[A-Z_]+=/.test(words[0]))) words.shift()
+    const words = dropPrefix(segment.trim().split(/\s+/).filter(Boolean))
     if (!['yay', 'paru', 'pacman'].includes(words[0])) continue
     const op = words.find(w => w.startsWith('-') && !w.startsWith('--'))
     const isSync = words.includes('--sync') || (op && /^-S[a-zA-Z]*$/.test(op) && !/[sicglp]/.test(op.slice(2)))
     if (!isSync) continue
     tool = words[0]
-    for (const w of words.slice(1)) if (!w.startsWith('-')) pkgs.push(w)
+    for (let i = 1; i < words.length; i++) {
+      const w = words[i]
+      // A redirection (2>&1, >/dev/null, <file) is shell, not a package; `2> file` also skips its target
+      if (/[<>]/.test(w)) {
+        if (/[<>]&?$/.test(w)) i++
+        continue
+      }
+      if (w.startsWith('-')) {
+        if (VALUE_OPTIONS.has(w)) i++
+        continue
+      }
+      pkgs.push(w)
+    }
   }
   return pkgs.length ? { tool, pkgs } : null
 }
