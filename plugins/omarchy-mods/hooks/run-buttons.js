@@ -63,6 +63,20 @@ function short(cmd) {
   return cmd.length > 50 ? cmd.slice(0, 47) + '...' : cmd
 }
 
+// A row of a label and buttons for a narrow terminal (85 columns): nothing shrinks; a button that does not
+// fit moves to the next line instead of drawing over the label
+function buttonRow(Box, label, buttons) {
+  return Box({
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: 2,
+    children: [
+      Box({ key: 'label', flexShrink: 0, children: [label] }),
+      ...buttons.map((b, i) => Box({ key: 'b-' + i, flexShrink: 0, children: [b] })),
+    ],
+  })
+}
+
 export function registerRunButtons(on, options) {
 
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
@@ -95,14 +109,8 @@ export function registerRunButtons(on, options) {
       flexDirection: 'column',
       children: [
         reply,
-        Box({
-          flexDirection: 'row',
-          columnGap: 2,
-          children: [
-            Text({ dimColor: true, children: ['Open in a terminal:'] }),
-            ...cmds.map((cmd, i) => Button({ key: 'run-' + i, label: short(cmd), onPress: () => launch($, cmd) })),
-          ],
-        }),
+        buttonRow(Box, Text({ dimColor: true, children: ['Open in a terminal:'] }),
+          cmds.map((cmd, i) => Button({ key: 'run-' + i, label: short(cmd), onPress: () => launch($, cmd) }))),
       ],
     })
   })
@@ -114,14 +122,8 @@ export function registerRunButtons(on, options) {
     return Box({
       flexDirection: 'column',
       children: [
-        Box({
-          flexDirection: 'row',
-          columnGap: 2,
-          children: [
-            Text({ color: 'suggestion', children: [launched ? 'Opened: ' + short(launched) : 'Run it yourself:'] }),
-            ...latest.map((cmd, i) => Button({ key: 'band-run-' + i, label: short(cmd), hotkey: String(i + 1), plain: true, onPress: () => launch($, cmd) })),
-          ],
-        }),
+        buttonRow(Box, Text({ color: 'suggestion', children: [launched ? 'Opened: ' + short(launched) : 'Run it yourself:'] }),
+          latest.map((cmd, i) => Button({ key: 'band-run-' + i, label: short(cmd), hotkey: String(i + 1), plain: true, onPress: () => launch($, cmd) }))),
         ...(below ? [below] : []),
       ],
     })
