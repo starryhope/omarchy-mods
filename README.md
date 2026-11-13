@@ -1,11 +1,16 @@
 # omarchy-mods
 
-Example Claude Code mods for [Omarchy](https://omarchy.org/). A mod is a Claude Code plugin with
-JavaScript hooks that run inside Claude Code and can draw in its interface. These four connect
-Claude Code in a terminal to the Omarchy desktop. They are examples to try and to start your own
-mods from.
+> **These mods are examples. They are not a maintained product.**
+>
+> - They show how you can build your own Claude Code mods for [Omarchy](https://omarchy.org/). Read them, copy from them, and change them.
+> - They are not maintained. Expect no updates, no fixes, and no support. A new Claude Code or Omarchy release can break them.
+> - Do not use them in production, at work, or on any system you depend on. Try them on a test system.
+> - They were written for a Starry Hope video and tested once, on one machine (Omarchy 4.5.0-3, Claude Code 2.1.323).
 
-## The four mods
+A mod is a Claude Code plugin with JavaScript hooks that run inside Claude Code and can draw in
+its interface. These four example mods connect Claude Code in a terminal to the Omarchy desktop.
+
+## The four example mods
 
 **Notifications.** When Claude finishes a turn, an Omarchy notification says so, with a Focus
 button that brings Claude's terminal forward. When Claude is about to show a permission prompt,
@@ -31,7 +36,10 @@ buttons show, with digit keys 1 to 3 typed into an empty prompt.
 shows how many servers run and on which ports. Press 0 to open the pane: each server has Open
 (an Omarchy web app window) and Stop.
 
-## Before you install
+## Before you try them
+
+- These are examples and are not maintained (see the note at the top). The safest use is to read
+  the code and build your own mod from it.
 
 - A mod is code that runs with your permissions, inside Claude Code. It is not sandboxed. It can
   read and write your files, start programs and make network requests. Read the code in
@@ -46,9 +54,9 @@ shows how many servers run and on which ports. Press 0 to open the pane: each se
   modes.
 - Tested in the terminal only. The Claude Desktop app has no Arch Linux build.
 
-## Install
+## Try them
 
-In a Claude Code session:
+On a test system, in a Claude Code session:
 
 ```text
 /plugin marketplace add starryhope/omarchy-mods
@@ -83,7 +91,16 @@ option has its own row.
 To turn one mod off, set its option to off. To turn all four off, disable the plugin in the
 Installed tab of `/plugin`, or run `claude plugin disable omarchy-mods@starryhope`.
 
+## Build your own
+
+Each mod is one file in `plugins/omarchy-mods/hooks/`, and `register.js` loads them. `adapter.js`
+is the only file that names Omarchy commands. Copy the file closest to what you want, change it,
+and load your copy with `claude --plugin-dir <your folder>`. The mods docs are at
+https://code.claude.com/docs/en/plugins/mods/overview.
+
 ## Known limits
+
+- Not maintained: these limits will not be fixed here.
 
 - Notification cards are cleared by their title, so two Claude sessions on one desktop clear each
   other's cards.
@@ -92,4 +109,4 @@ Installed tab of `/plugin`, or run `claude plugin disable omarchy-mods@starryhop
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See `LICENSE`. The software comes as is, with no warranty.
