@@ -1,0 +1,11 @@
+#!/bin/bash
+# Shows a command at a shell prompt, typed but not run; Enter runs it, Ctrl-C drops it
+cmd=$(printf '%s' "$1" | base64 -d)
+if ((BASH_VERSINFO[0] >= 4)); then
+  read -r -e -i "$cmd" -p "$ " line || exit 130
+  history -s "$line"
+  eval "$line"
+else
+  # macOS ships bash 3.2 with no read -i; zsh's vared does the same
+  exec zsh -f -i -c 'cmd=$1; vared -p "$ " cmd || exit 130; eval "$cmd"' zsh "$cmd"
+fi

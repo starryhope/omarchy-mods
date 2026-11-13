@@ -1,0 +1,34 @@
+#!/bin/bash
+# Prints `address:0x...`, the Hyprland window of the terminal Claude Code runs in, or nothing.
+# Walks up the parent processes from the caller (Claude) to a pid Hyprland lists as a window.
+# Under tmux the window holds the tmux client, not Claude, so it starts from that session's clients.
+command -v hyprctl >/dev/null || exit 0
+command -v jq >/dev/null || exit 0
+clients=$(timeout 3 hyprctl clients -j 2>/dev/null) || exit 0
+
+starts=("$PPID")
+if [[ -n ${TMUX:-} ]] && command -v tmux >/dev/null; then
+  session=$(tmux display -p -t "${TMUX_PANE:-}" '#{session_name}' 2>/dev/null)
+  while read -r cpid csession; do
+    [[ $csession == "$session" ]] && starts+=("$cpid")
+  done < <(tmux list-clients -F '#{client_pid} #{session_name}' 2>/dev/null)
+fi
+
+parent_of() {
+  local stat
+  stat=$(<"/proc/$1/stat") 2>/dev/null || return 1
+  stat=${stat##*) }
+  set -- $stat
+  printf '%s' "$2"
+}
+
+for pid in "${starts[@]}"; do
+  while [[ -n $pid && $pid -gt 1 ]]; do
+    address=$(jq -r --argjson pid "$pid" 'first(.[] | select(.pid == $pid) | .address) // empty' <<<"$clients")
+    if [[ -n $address ]]; then
+      printf 'address:%s\n' "$address"
+      exit 0
+    fi
+    pid=$(parent_of "$pid") || break
+  done
+done

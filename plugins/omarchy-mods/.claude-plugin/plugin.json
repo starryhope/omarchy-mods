@@ -1,0 +1,18 @@
+{
+  "name": "omarchy-mods",
+  "version": "0.1.0",
+  "description": "Example Claude Code mods for Omarchy: desktop notifications with Approve and Deny, package cards with an AUR review hold, run-it-for-me buttons, and a services pane",
+  "author": { "name": "Starry Hope", "url": "https://www.starryhope.com/" },
+  "repository": "https://github.com/starryhope/omarchy-mods",
+  "license": "MIT",
+  "keywords": ["omarchy", "hyprland", "arch", "aur", "mods"],
+  "userConfig": {
+    "adapter": { "type": "string", "title": "Adapter", "description": "omarchy runs the real Omarchy commands, pacman and ss. fake is for working on the mods on another system and needs stand-in commands on PATH", "options": ["omarchy", "fake"], "default": "omarchy" },
+    "notify": { "type": "boolean", "title": "Notifications", "description": "A desktop notification when Claude finishes, and Approve, Deny and Focus buttons before a permission prompt", "default": true },
+    "package_cards": { "type": "boolean", "title": "Package cards", "description": "Cards for yay and pacman installs, and the AUR review hold", "default": true },
+    "run_buttons": { "type": "boolean", "title": "Run-it-for-me buttons", "description": "Buttons that open a command from a reply, typed but not run, in a floating terminal", "default": true },
+    "services": { "type": "boolean", "title": "Services pane", "description": "Lists background servers Claude started, with Open and Stop", "default": true },
+    "aur_hold_minutes": { "type": "number", "title": "AUR hold", "description": "Minutes an AUR install waits for Install or Cancel before it is refused", "default": 3, "min": 1, "max": 60 },
+    "approve_wait_seconds": { "type": "number", "title": "Approve wait", "description": "Seconds to wait for an answer on the notification before the normal prompt shows", "default": 90, "min": 10, "max": 600 }
+  }
+}

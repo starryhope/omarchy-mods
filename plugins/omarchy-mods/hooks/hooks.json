@@ -1,0 +1,4 @@
+{
+  "description": "omarchy-mods hooks module",
+  "modules": ["./register.js"]
+}

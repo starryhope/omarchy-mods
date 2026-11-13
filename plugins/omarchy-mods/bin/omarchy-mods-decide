@@ -1,0 +1,23 @@
+#!/bin/bash
+# Notification action: omarchy-mods-decide <approve|deny|prompt|focus> <window|none> [decision file]
+# Writes the verb to the decision file the mod waits on; focus and prompt also bring Claude's terminal forward
+set -euo pipefail
+verb=${1:-}
+window=${2:-none}
+file=${3:-none}
+log=${OMARCHY_MODS_LOG:-}
+[[ -n $log ]] && printf '%s decide %s %s %s\n' "$(date +%T)" "$verb" "$window" "$file" >>"$log"
+case $verb in
+approve | deny | prompt) [[ $file != none ]] && printf '%s\n' "$verb" >"$file" ;;
+focus) ;;
+*) echo "usage: omarchy-mods-decide approve|deny|prompt|focus <window|none> [file]" >&2; exit 1 ;;
+esac
+# The window the mod recorded wins; OMARCHY_MODS_WINDOW in the desktop shell's environment is the manual fallback
+[[ $window == none ]] && window=${OMARCHY_MODS_WINDOW:-none}
+# Only a plain Hyprland window selector goes into the Lua string
+[[ $window =~ ^[a-z]+:[A-Za-z0-9._^$-]+$ ]] || window=none
+if [[ ($verb == focus || $verb == prompt) && $window != none ]] && command -v hyprctl >/dev/null; then
+  # Hyprland with the Lua config takes hl.dsp.focus; the older config takes focuswindow (as omarchy-launch-or-focus does)
+  hyprctl dispatch "hl.dsp.focus({ window = \"$window\" })" >/dev/null 2>&1 ||
+    hyprctl dispatch focuswindow "$window" >/dev/null 2>&1 || true
+fi
