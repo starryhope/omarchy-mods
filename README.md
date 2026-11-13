@@ -15,7 +15,8 @@ its interface. These four example mods connect Claude Code in a terminal to the 
 **Notifications.** When Claude finishes a turn, an Omarchy notification says so, with a Focus
 button that brings Claude's terminal forward. When Claude is about to show a permission prompt,
 a notification shows Approve, Deny and Focus first, so you can answer from another workspace.
-The card goes away once the prompt is answered, from the card or in the terminal. If no one
+The card goes away once the prompt is answered, from the card or in the terminal. A click on the card's text brings
+Claude's terminal forward; only the Approve and Deny buttons answer the prompt. If no one
 answers within 90 seconds, the normal prompt stays in the terminal.
 
 **Package cards and the AUR review hold.** A `pacman -S` or `yay -S` install that Claude runs
@@ -46,8 +47,8 @@ shows how many servers run and on which ports. Press 0 to open the pane: each se
   `plugins/omarchy-mods/hooks/` first. `claude plugin validate ./plugins/omarchy-mods` lists the
   events the mods handle and the calls they make, without running them.
 - Claude Code 2.1.287 or later in a terminal (`claude --version`).
-- Omarchy 4.5 (tested on 4.5.0-3, Claude Code 2.1.323). The mods call `omarchy-notification-send`,
-  `omarchy-notification-dismiss`, `omarchy-launch-floating-terminal-with-presentation`,
+- Omarchy 4.5 (tested on 4.5.0-3, Claude Code 2.1.323). The mods call `omarchy-notification-dismiss`, `busctl` (the notification cards, sent with Omarchy's
+  card hints so a click on the card body does Focus, never Approve), `omarchy-launch-floating-terminal-with-presentation`,
   `omarchy-launch-webapp`, `hyprctl`, `pacman` and `ss`. The package cards read the AUR web API.
 - Permission notifications show only when Claude Code would show a permission prompt. In auto
   mode most tool calls run without a prompt, so most cards never show. Press Shift+Tab to switch

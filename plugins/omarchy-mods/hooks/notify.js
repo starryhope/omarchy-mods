@@ -1,5 +1,5 @@
 // Notify when Claude needs you: a desktop notification at turn end, and Approve/Deny buttons before a permission prompt
-import { decideArgv, dismissArgv, notifyArgv, windowArgv } from './adapter.js'
+import { decideArgv, dismissArgv, modeOf, notifyArgv, windowArgv } from './adapter.js'
 
 const ASK_TITLE = 'Claude needs your OK'
 const DONE_TITLE = 'Claude finished'
@@ -53,7 +53,7 @@ async function send($, argv) {
 }
 
 // Sends the notification and waits for Approve, Deny or Focus from it or from the band
-async function askByNotification($, what, waitMs, signal) {
+async function askByNotification($, what, waitMs, signal, mode) {
   const tmp = ((await $.env.get('TMPDIR')) || '/tmp/').replace(/\/?$/, '/')
   const file = tmp + 'omarchy-mods-decision-' + (await $.clock.now())
   pending = { what, decision: null }
@@ -70,7 +70,10 @@ async function askByNotification($, what, waitMs, signal) {
       { label: 'Focus', argv: decideArgv(root, 'prompt', win) },
     ],
     withArgs: [file],
-  }))
+    // A click on the card body brings Claude's terminal forward and leaves the dialog open; only the
+    // Approve and Deny buttons answer it, so a stray click never grants a permission
+    click: 'Focus',
+  }, mode))
   const started = await $.clock.now()
   // Waiting inside $.process.run keeps the wait off the hook's 10 second budget
   while (!pending.decision && !signal.aborted && (await $.clock.now()) - started < waitMs) {
@@ -92,6 +95,7 @@ function answer(decision) {
 
 export function registerNotify(on, options) {
   const waitMs = Number(options.approve_wait_seconds || 90) * 1000
+  const mode = modeOf(options)
 
   on('turn.complete', { isAborted: false }, async ($, e, next) => {
     if (e.agentId === undefined && !e.isAborted) {
@@ -105,7 +109,8 @@ export function registerNotify(on, options) {
           body: cut(plain(e.answer), 160),
           urgency: 'normal',
           actions: [{ label: 'Focus', argv: decideArgv($.plugin.root, 'focus', win) }],
-        }))
+          click: 'Focus',
+        }, mode))
       })()
     }
     return next(e)
@@ -120,7 +125,7 @@ export function registerNotify(on, options) {
   // Fires only when a permission dialog is about to show: after the rules, tool.check hooks and auto mode's classifier
   on('classic.PermissionRequest', async ($, e, next) => {
     const what = summary(e.tool_name, e.tool_input)
-    const how = await askByNotification($, what, waitMs, next.signal)
+    const how = await askByNotification($, what, waitMs, next.signal, mode)
     // A transcript line; off by default, since it shows on camera (option debug_log)
     if (options.debug_log) $.ui.log('notify: ' + what + ' -> ' + how)
     if (how === 'approve') return { decision: { behavior: 'allow' } }

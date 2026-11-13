@@ -45,11 +45,39 @@ export function listeningArgv(mode) {
   return mode === 'omarchy' ? ['ss', '-Hltn'] : ['lsof', '-nP', '-iTCP', '-sTCP:LISTEN']
 }
 
-// A desktop notification with up to three buttons; each button runs argv plus withArgs
-export function notifyArgv({ title, body, urgency, actions, withArgs }) {
+// A desktop notification with up to three buttons; each button runs argv plus withArgs.
+// `click` names the action a click on the card body runs. omarchy-notification-send always gives the
+// body click to the first action, so a stray click on a permission card pressed Approve (found on the
+// capture box, 2026-11-13). In omarchy mode the card goes out as the same D-Bus call that command makes,
+// with the same hints (omarchy-actions for the buttons, omarchy-exec-argv for the body click), but with
+// the body click set to `click`. Fake mode keeps the stand-in command.
+export function notifyArgv({ title, body, urgency, actions, withArgs, click }, mode = 'fake') {
+  const list = actions || []
+  const extra = withArgs || []
+  const chosen = list.find(a => a.label === click) || list[0]
+  if (mode === 'omarchy' && chosen) {
+    const urgencyByte = { low: 0, normal: 1, critical: 2 }[urgency] ?? 1
+    const buttons = list.map(a => ({ label: a.label, argv: [...a.argv, ...extra] }))
+    const hints = [
+      'urgency', 'y', String(urgencyByte),
+      'omarchy-actions', 's', JSON.stringify(buttons),
+      'omarchy-exec-argv', 's', JSON.stringify([...chosen.argv, ...extra]),
+    ]
+    // busctl takes each value as one typed parameter, so the title and body stay text;
+    // the leading `--` keeps a dash-leading value positional (as in omarchy-notification-send)
+    return [
+      'busctl', '--user', '--', 'call',
+      'org.freedesktop.Notifications', '/org/freedesktop/Notifications',
+      'org.freedesktop.Notifications', 'Notify', 'susssasa{sv}i',
+      'Claude Code', '0', '', title, body || '',
+      '0',
+      String(hints.length / 3), ...hints,
+      '-1',
+    ]
+  }
   const argv = [COMMANDS.notify, '-u', urgency || 'normal', '--app-name', 'Claude Code', title, body || '']
-  for (const a of actions || []) argv.push('--action', a.label, ...a.argv)
-  if (withArgs && withArgs.length) argv.push('--with', ...withArgs)
+  for (const a of list) argv.push('--action', a.label, ...a.argv)
+  if (extra.length) argv.push('--with', ...extra)
   return argv
 }
 
