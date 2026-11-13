@@ -53,7 +53,10 @@ shows how many servers run and on which ports. Press 0 to open the pane: each se
 - Permission notifications show only when Claude Code would show a permission prompt. In auto
   mode most tool calls run without a prompt, so most cards never show. Press Shift+Tab to switch
   modes.
-- Tested in the terminal only. The Claude Desktop app has no Arch Linux build.
+- Tested in the terminal and in the Claude desktop app that Omarchy installs (Install > AI >
+  Claude Desktop; app 5.1231.2 with Claude Code 2.1.321 inside). In the app, the notifications, the package cards and the run
+  buttons work with no change, and their buttons can be clicked. The app keeps a list of its
+  servers itself, so the services pane is for the terminal.
 
 ## Try them
 
