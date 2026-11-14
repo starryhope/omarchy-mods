@@ -1,0 +1,9 @@
+{
+  "name": "omarchy-theme",
+  "version": "0.1.0",
+  "description": "An example theme for the Code tab of the Claude desktop app: Omarchy's Tokyo Night colors with coral and violet, the Omarchy and OMA logos, and a Tokyo skyline in thin outlines with windows that light up",
+  "author": { "name": "Starry Hope", "url": "https://www.starryhope.com/" },
+  "repository": "https://github.com/starryhope/omarchy-mods",
+  "license": "MIT",
+  "keywords": ["omarchy", "theme", "backdrop", "desktop", "mods"]
+}

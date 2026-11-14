@@ -45,6 +45,29 @@ function running() {
   return [...services.values()].filter(s => s.state === 'running')
 }
 
+// A background task counts as a server only once a listening port is found for it
+export function isServer(s) {
+  return Boolean(s.port && s.seen)
+}
+
+function servers() {
+  return running().filter(isServer)
+}
+
+// Sets listening from the listening-sockets output; returns the tasks seen listening for the first time
+export function markListening(live, output) {
+  const fresh = []
+  for (const s of live) {
+    if (!s.port) continue
+    s.listening = new RegExp('[:.]' + s.port + '\\b').test(output)
+    if (s.listening && !s.seen) {
+      s.seen = true
+      fresh.push(s)
+    }
+  }
+  return fresh
+}
+
 async function refresh($, mode) {
   now = await $.clock.now()
   const live = running()
@@ -62,7 +85,9 @@ async function refresh($, mode) {
   }
   try {
     const r = await $.process.run(listeningArgv(mode), { timeoutMs: 5000 })
-    for (const s of live) if (s.port) s.listening = new RegExp('[:.]' + s.port + '\\b').test(r.stdout)
+    const fresh = markListening(live, r.stdout)
+    if (fresh.length) await save($)
+    for (const s of fresh) $.ui.toast('Server started in the background: ' + s.command + ' (run /services)')
   } catch {}
   $.ui.invalidate('ui.render')
 }
@@ -125,7 +150,6 @@ export function registerServices(on, options) {
     services.set(taskId, { taskId, command: e.command, port, url: urlIn(text), startedAt: await $.clock.now(), state: 'running', outputPath: path })
     await save($)
     await refresh($, mode)
-    $.ui.toast('Server started in the background: ' + e.command + ' (run /services)')
     return result
   })
 
@@ -151,7 +175,7 @@ export function registerServices(on, options) {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e, next) => {
     const { Box, Text, Button } = $.ui.resolve(e)
-    const all = [...services.values()]
+    const all = [...services.values()].filter(isServer)
     if (!all.length) return Text({ dimColor: true, children: ['No servers started in this session.'] })
     return Box({
       flexDirection: 'column',
@@ -188,7 +212,7 @@ export function registerServices(on, options) {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const live = running()
+    const live = servers()
     if (!live.length) return next(e)
     const { Box, Text, Button } = $.ui.resolve(e)
     const below = await next(e)

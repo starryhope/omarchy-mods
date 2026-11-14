@@ -1,12 +1,20 @@
 {
   "name": "starryhope",
   "description": "Claude Code plugins from Starry Hope",
-  "owner": { "name": "Starry Hope", "url": "https://www.starryhope.com/" },
+  "owner": {
+    "name": "Starry Hope",
+    "url": "https://www.starryhope.com/"
+  },
   "plugins": [
     {
       "name": "omarchy-mods",
       "source": "./plugins/omarchy-mods",
       "description": "Example Claude Code mods for Omarchy: notifications, package cards with an AUR review hold, run buttons, and a services pane"
+    },
+    {
+      "name": "omarchy-theme",
+      "source": "./plugins/omarchy-theme",
+      "description": "An example theme for the Claude desktop app's Code tab: Omarchy's colors, its two logos and a Tokyo skyline that lights up"
     }
   ]
 }

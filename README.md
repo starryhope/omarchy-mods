@@ -37,6 +37,41 @@ buttons show, with digit keys 1 to 3 typed into an empty prompt.
 shows how many servers run and on which ports. Press 0 to open the pane: each server has Open
 (an Omarchy web app window) and Stop.
 
+## The theme
+
+`omarchy-theme` is a second plugin in this repo: a theme for the Code tab of the Claude desktop
+app. Claude wrote it in the video, starting from the Blueprint scene of Anthropic's
+`theme-examples` plugin. It uses the colors of Omarchy's Tokyo Night theme with coral and violet,
+draws the Omarchy logo and the OMA logo, and puts a Tokyo skyline in thin outlines behind the
+conversation. Soft halos swell behind the logos, and the skyline windows light up and go dark.
+
+The colors are fixed for the Tokyo Night theme and do not follow a change of your Omarchy theme.
+To change them, edit `plugins/omarchy-theme/hooks/register.tsx`.
+
+`hooks/make-colors.js` in the theme is Anthropic's helper from Claude Code's plugin-authoring
+skill, copied into the mod as that skill instructs.
+
+What it needs:
+
+- The Claude desktop app with Claude Code 2.1.325 or later inside (tested on the desktop app
+  5.11492.5 for Linux). Older builds draw no backdrop.
+- A backdrop draws in the desktop app only, not in Claude Code in a terminal.
+
+To try it, in a Claude Code session:
+
+```text
+/plugin marketplace add starryhope/omarchy-mods
+/plugin install omarchy-theme@starryhope
+```
+
+Then start a new session in the desktop app: the theme is set when a session starts.
+
+To take it off, disable or uninstall the plugin and start a new session. If the colors stay,
+remove them in Settings > Appearance > "Remove colors".
+
+The Omarchy logo and the OMA logo belong to Omarchy (omarchy.org/brand). They are included here
+as part of this example theme.
+
 ## Before you try them
 
 - These are examples and are not maintained (see the note at the top). The safest use is to read
